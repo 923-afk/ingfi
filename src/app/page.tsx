@@ -31,6 +31,7 @@ const statusColor: Record<JobStatus, string> = {
 };
 
 const TEXT_TRANSLATIONS: Record<Locale, Record<string, string>> = {
+  zh: {},
   en: {
     "商辦大樓冷氣漏水檢修": "Office HVAC Leak Repair",
     "地下室消防泵浦保養": "Basement Fire Pump Maintenance",
