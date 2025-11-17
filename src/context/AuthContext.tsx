@@ -8,9 +8,11 @@ import {
   useMemo,
   useState,
   type ReactNode,
-} from "react";
+} from 'react';
+import { supabase } from '@/lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
-export type UserRole = "customer" | "professional";
+export type UserRole = 'customer' | 'professional';
 
 export type AuthUser = {
   id: string;
@@ -24,30 +26,9 @@ type AuthContextValue = {
   user: AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  logout: () => void;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
 };
-
-type DemoUserRecord = AuthUser & { password: string };
-
-const STORAGE_KEY = "engineer-finder-auth";
-
-const DEMO_USERS: DemoUserRecord[] = [
-  {
-    id: "customer-001",
-    name: "王小姐",
-    email: "user@example.com",
-    password: "demo123",
-    role: "customer",
-  },
-  {
-    id: "pro-001",
-    name: "李建宏",
-    email: "pro@example.com",
-    password: "demo123",
-    role: "professional",
-    professionalId: "pro-li-jianhong",
-  },
-];
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -56,38 +37,175 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed: AuthUser = JSON.parse(stored);
-        setUser(parsed);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        loadUserProfile(session.user);
+      } else {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.warn("Failed to restore auth state", error);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        loadUserProfile(session.user);
+      } else {
+        setUser(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function loadUserProfile(supabaseUser: User) {
+    try {
+      // Fetch user profile from database
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (error) {
+        // Profile doesn't exist yet - create it with default values
+        const defaultRole = (supabaseUser.user_metadata?.role as UserRole) || 'customer';
+        const defaultName = supabaseUser.user_metadata?.name || supabaseUser.email!.split('@')[0];
+        
+        const { error: insertError } = await supabase.from('user_profiles').insert({
+          id: supabaseUser.id,
+          name: defaultName,
+          role: defaultRole,
+          email: supabaseUser.email!,
+        });
+
+        if (insertError) {
+          console.error('Failed to create profile:', insertError);
+          // Fallback to basic user info
+          setUser({
+            id: supabaseUser.id,
+            email: supabaseUser.email!,
+            name: defaultName,
+            role: defaultRole,
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Retry fetching the profile
+        const { data: newData } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', supabaseUser.id)
+          .single();
+
+        if (newData) {
+          setUser({
+            id: supabaseUser.id,
+            email: supabaseUser.email!,
+            name: newData.name || defaultName,
+            role: newData.role || defaultRole,
+            professionalId: newData.professional_id,
+          });
+        } else {
+          setUser({
+            id: supabaseUser.id,
+            email: supabaseUser.email!,
+            name: defaultName,
+            role: defaultRole,
+          });
+        }
+      } else {
+        setUser({
+          id: supabaseUser.id,
+          email: supabaseUser.email!,
+          name: data.name || supabaseUser.email!.split('@')[0],
+          role: data.role || 'customer',
+          professionalId: data.professional_id,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load user profile:', err);
+      // Fallback to basic user info
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email!,
+        name: supabaseUser.email!.split('@')[0],
+        role: 'customer',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }
 
   const login = useCallback(async (email: string, password: string) => {
-    const record = DEMO_USERS.find(
-      (item) => item.email.toLowerCase() === email.toLowerCase() && item.password === password
-    );
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (!record) {
-      return { error: "Invalid email or password" };
+      if (error) {
+        return { error: error.message };
+      }
+
+      if (data.user) {
+        await loadUserProfile(data.user);
+      }
+
+      return {};
+    } catch (err) {
+      return { error: 'Login failed. Please try again.' };
     }
-
-    const { password: _ignoredPassword, ...safeUser } = record;
-    void _ignoredPassword;
-    setUser(safeUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeUser));
-    return {};
   }, []);
 
-  const logout = useCallback(() => {
+  const signup = useCallback(
+    async (email: string, password: string, name: string, role: UserRole) => {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name,
+              role,
+            },
+          },
+        });
+
+        if (error) {
+          return { error: error.message };
+        }
+
+        // Create user profile
+        if (data.user) {
+          const { error: profileError } = await supabase.from('user_profiles').insert({
+            id: data.user.id,
+            name,
+            role,
+            email,
+          });
+
+          if (profileError) {
+            console.error('Failed to create profile:', profileError);
+            // Don't fail signup if profile creation fails - user can still log in
+          }
+        }
+
+        return {};
+      } catch (err) {
+        return { error: 'Signup failed. Please try again.' };
+      }
+    },
+    []
+  );
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -95,9 +213,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isLoading,
       login,
+      signup,
       logout,
     }),
-    [user, isLoading, login, logout]
+    [user, isLoading, login, signup, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -106,13 +225,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return ctx;
 }
 
-export const demoCredentials = DEMO_USERS.map(({ password, ...rest }) => ({
-  ...rest,
-  password,
-}));
-
+// For backward compatibility - demo credentials for testing
+export const demoCredentials = [
+  {
+    id: 'demo-customer',
+    name: 'Demo Customer',
+    email: 'demo@example.com',
+    password: 'demo123',
+    role: 'customer' as UserRole,
+  },
+  {
+    id: 'demo-professional',
+    name: 'Demo Professional',
+    email: 'demo-pro@example.com',
+    password: 'demo123',
+    role: 'professional' as UserRole,
+  },
+];

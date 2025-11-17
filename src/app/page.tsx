@@ -303,31 +303,41 @@ export default function Home() {
 
   const selectedJob = filteredJobs.find((job) => job.id === selectedJobId) ?? null;
 
-  const handleAssign = (job: JobRequest, professional: Professional) => {
-    updateJob(job.id, {
-      status: "已指派",
-      assignedProfessionalId: professional.id,
-      timeline: [
-        ...job.timeline,
-        {
-          id: crypto.randomUUID(),
-          kind: "更新",
-          summary: {
-            zh: `${professional.name} 已指派`,
-            en: `${professional.name} assigned`,
-            de: `${professional.name} zugewiesen`,
+  const handleAssign = async (job: JobRequest, professional: Professional) => {
+    try {
+      await updateJob(job.id, {
+        status: "已指派",
+        assignedProfessionalId: professional.id,
+        timeline: [
+          ...job.timeline,
+          {
+            id: crypto.randomUUID(),
+            kind: "更新",
+            summary: {
+              zh: `${professional.name} 已指派`,
+              en: `${professional.name} assigned`,
+              de: `${professional.name} zugewiesen`,
+            },
+            date: new Date().toISOString(),
           },
-          date: new Date().toISOString(),
-        },
-      ],
-    });
-    showToast(`${professional.name} 已指派到此需求`, 'success');
+        ],
+      });
+      showToast(`${professional.name} 已指派到此需求`, 'success');
+    } catch (error) {
+      console.error('Failed to assign professional:', error);
+      showToast('指派失敗，請稍後再試', 'error');
+    }
   };
 
-  const handleCreateJob = (job: JobRequest) => {
-    addJob(job);
-    setSelectedJobId(job.id);
-    showToast('需求已建立', 'success');
+  const handleCreateJob = async (job: JobRequest) => {
+    try {
+      await addJob(job);
+      setSelectedJobId(job.id);
+      showToast('需求已建立', 'success');
+    } catch (error) {
+      console.error('Failed to create job:', error);
+      showToast('建立需求失敗，請稍後再試', 'error');
+    }
   };
 
   const assignedProfessional =
