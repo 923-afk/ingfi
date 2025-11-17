@@ -10,6 +10,8 @@ import {
   type Locale,
 } from "@/i18n/dictionary";
 import { demoCredentials, useAuth } from "@/context/AuthContext";
+import { validateEmail, validatePassword } from "@/utils/validation";
+import { useToast } from "@/components/Toast";
 
 const LOCALE_STORAGE_KEY = "engineer-finder-locale";
 
@@ -20,7 +22,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("user@example.com");
   const [password, setPassword] = useState("demo123");
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const dict: AppDictionary = dictionaries[locale];
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -39,12 +44,31 @@ export default function LoginPage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
+    
+    if (!emailValidation.valid) {
+      setEmailError(emailValidation.error || null);
+      return;
+    }
+    setEmailError(null);
+    
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.error || null);
+      return;
+    }
+    setPasswordError(null);
+    
     const result = await login(email, password);
     if (result.error) {
       setError(result.error);
+      showToast(result.error, 'error');
       return;
     }
     setError(null);
+    showToast('登入成功', 'success');
     router.replace("/");
   };
 
@@ -87,11 +111,32 @@ export default function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (emailError) {
+                    const validation = validateEmail(event.target.value);
+                    setEmailError(validation.valid ? null : validation.error || null);
+                  }
+                }}
+                onBlur={() => {
+                  const validation = validateEmail(email);
+                  setEmailError(validation.valid ? null : validation.error || null);
+                }}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 ${
+                  emailError
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-100'
+                    : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-100'
+                }`}
                 placeholder="you@example.com"
                 required
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? 'email-error' : undefined}
               />
+              {emailError && (
+                <p id="email-error" className="mt-1 text-xs text-rose-600" role="alert">
+                  {emailError}
+                </p>
+              )}
             </div>
             <div>
               <label className="text-xs font-semibold text-slate-500">
@@ -100,11 +145,32 @@ export default function LoginPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  if (passwordError) {
+                    const validation = validatePassword(event.target.value);
+                    setPasswordError(validation.valid ? null : validation.error || null);
+                  }
+                }}
+                onBlur={() => {
+                  const validation = validatePassword(password);
+                  setPasswordError(validation.valid ? null : validation.error || null);
+                }}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 ${
+                  passwordError
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-100'
+                    : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-100'
+                }`}
                 placeholder="********"
                 required
+                aria-invalid={!!passwordError}
+                aria-describedby={passwordError ? 'password-error' : undefined}
               />
+              {passwordError && (
+                <p id="password-error" className="mt-1 text-xs text-rose-600" role="alert">
+                  {passwordError}
+                </p>
+              )}
             </div>
 
             {error ? (

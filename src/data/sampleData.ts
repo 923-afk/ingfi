@@ -18,6 +18,9 @@ export const professionals: Professional[] = [
     serviceAreas: ["台北市", "新北市", "桃園市"],
     availability: "週一至週六 08:00-18:00，可夜間值勤",
     introduction: "專精中央空調與消防系統維護，具有大型商辦機電統包經驗。",
+    verificationLevel: "enhanced",
+    verifiedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(),
+    verificationNotes: "實地查核設備與證照文件，比對官方註冊資料。",
   },
   {
     id: "pro-huang-yating",
@@ -30,6 +33,9 @@ export const professionals: Professional[] = [
     serviceAreas: ["桃園市", "新竹縣", "新竹市"],
     availability: "週一至週五 09:00-17:00，週末需預約",
     introduction: "擅長各式屋頂防水與外牆補漏，提供 1 年保固與檢測報告。",
+    verificationLevel: "basic",
+    verifiedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21).toISOString(),
+    verificationNotes: "完成電話訪查與施工案例佐證，待補上原始發票。",
   },
   {
     id: "pro-chen-junxiang",
@@ -42,6 +48,9 @@ export const professionals: Professional[] = [
     serviceAreas: ["台北市", "基隆市", "宜蘭縣"],
     availability: "可配合夜間及週末緊急工程",
     introduction: "專注老屋結構補強與耐震評估，提供完整安全檢測與補強方案。",
+    verificationLevel: "enhanced",
+    verifiedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(),
+    verificationNotes: "合作建築師推薦，檢附耐震評估報告與大型案場經驗。",
   },
 ];
 

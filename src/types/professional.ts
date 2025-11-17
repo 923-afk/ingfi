@@ -1,3 +1,5 @@
+export type VerificationLevel = "pending" | "basic" | "enhanced";
+
 export interface Professional {
   id: string;
   name: string;
@@ -9,5 +11,8 @@ export interface Professional {
   serviceAreas: string[];
   availability: string;
   introduction: string;
+  verificationLevel: VerificationLevel;
+  verifiedAt?: string;
+  verificationNotes?: string;
 }
 

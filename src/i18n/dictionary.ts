@@ -73,6 +73,12 @@ export const dictionaries: Record<
     professionalServiceAreas: string;
     professionalAvailability: string;
     professionalCertifications: string;
+    professionalVerificationTitle: string;
+    verificationLevelPending: string;
+    verificationLevelBasic: string;
+    verificationLevelEnhanced: string;
+    verificationLastVerified: string;
+    verificationNotes: string;
     professionalRecentJobs: string;
     professionalNoJobs: string;
     roleCustomer: string;
@@ -91,6 +97,18 @@ export const dictionaries: Record<
     landingBulletTwo: string;
     landingBulletThree: string;
     landingLoginLink: string;
+    todosTitle: string;
+    todosSubtitle: string;
+    todosAddNew: string;
+    todosAddPlaceholder: string;
+    todosEmpty: string;
+    todosCompleted: string;
+    todosActive: string;
+    todosAll: string;
+    todosDelete: string;
+    todosClearCompleted: string;
+    todosMarkComplete: string;
+    todosMarkActive: string;
   }
 > = {
   zh: {
@@ -156,6 +174,12 @@ export const dictionaries: Record<
     professionalServiceAreas: "服務地區",
     professionalAvailability: "可服務時段",
     professionalCertifications: "專業證照",
+    professionalVerificationTitle: "認證狀態",
+    verificationLevelPending: "待驗證",
+    verificationLevelBasic: "基礎驗證",
+    verificationLevelEnhanced: "進階驗證",
+    verificationLastVerified: "最近核驗",
+    verificationNotes: "核驗備註",
     professionalRecentJobs: "近期案件",
     professionalNoJobs: "尚未接到案件。",
     roleCustomer: "用戶",
@@ -174,6 +198,18 @@ export const dictionaries: Record<
     landingBulletTwo: "查看師傅經驗、評價與可服務時段，安心挑人。",
     landingBulletThree: "隨時追蹤施工進度、保固提醒與售後服務。",
     landingLoginLink: "立即登入體驗",
+    todosTitle: "待辦事項",
+    todosSubtitle: "管理您的任務與待辦清單",
+    todosAddNew: "新增待辦",
+    todosAddPlaceholder: "輸入新的待辦事項...",
+    todosEmpty: "目前沒有待辦事項",
+    todosCompleted: "已完成",
+    todosActive: "進行中",
+    todosAll: "全部",
+    todosDelete: "刪除",
+    todosClearCompleted: "清除已完成",
+    todosMarkComplete: "標記為完成",
+    todosMarkActive: "標記為進行中",
   },
   en: {
     appTitle: "Home Repair Finder",
@@ -238,6 +274,12 @@ export const dictionaries: Record<
     professionalServiceAreas: "Service areas",
     professionalAvailability: "Availability",
     professionalCertifications: "Certifications",
+    professionalVerificationTitle: "Verification",
+    verificationLevelPending: "Pending review",
+    verificationLevelBasic: "Verified",
+    verificationLevelEnhanced: "Enhanced verification",
+    verificationLastVerified: "Last verified",
+    verificationNotes: "Notes",
     professionalRecentJobs: "Recent requests",
     professionalNoJobs: "No assigned requests yet.",
     roleCustomer: "Homeowner",
@@ -256,6 +298,18 @@ export const dictionaries: Record<
     landingBulletTwo: "Check experience, ratings, and availability before you choose.",
     landingBulletThree: "Stay on top of updates, warranty reminders, and after-service support.",
     landingLoginLink: "Sign in to get started",
+    todosTitle: "To-Do List",
+    todosSubtitle: "Manage your tasks and to-dos",
+    todosAddNew: "Add New",
+    todosAddPlaceholder: "Enter a new task...",
+    todosEmpty: "No tasks yet",
+    todosCompleted: "Completed",
+    todosActive: "Active",
+    todosAll: "All",
+    todosDelete: "Delete",
+    todosClearCompleted: "Clear Completed",
+    todosMarkComplete: "Mark Complete",
+    todosMarkActive: "Mark Active",
   },
   de: {
     appTitle: "Handwerker-Finder",
@@ -320,6 +374,12 @@ export const dictionaries: Record<
     professionalServiceAreas: "Einsatzgebiete",
     professionalAvailability: "Verfügbarkeit",
     professionalCertifications: "Zertifikate",
+    professionalVerificationTitle: "Verifizierung",
+    verificationLevelPending: "Prüfung ausstehend",
+    verificationLevelBasic: "Verifiziert",
+    verificationLevelEnhanced: "Erweiterte Verifizierung",
+    verificationLastVerified: "Zuletzt geprüft",
+    verificationNotes: "Hinweise",
     professionalRecentJobs: "Aktuelle Aufträge",
     professionalNoJobs: "Noch keine Aufträge erhalten.",
     roleCustomer: "Auftraggeber",
@@ -341,6 +401,18 @@ export const dictionaries: Record<
     landingBulletThree:
       "Behalten Sie Aktualisierungen, Gewährleistung und Nachbetreuung jederzeit im Blick.",
     landingLoginLink: "Jetzt anmelden und starten",
+    todosTitle: "Aufgabenliste",
+    todosSubtitle: "Verwalten Sie Ihre Aufgaben",
+    todosAddNew: "Neu hinzufügen",
+    todosAddPlaceholder: "Neue Aufgabe eingeben...",
+    todosEmpty: "Noch keine Aufgaben",
+    todosCompleted: "Erledigt",
+    todosActive: "Aktiv",
+    todosAll: "Alle",
+    todosDelete: "Löschen",
+    todosClearCompleted: "Erledigte löschen",
+    todosMarkComplete: "Als erledigt markieren",
+    todosMarkActive: "Als aktiv markieren",
   },
 };
 
